@@ -1,0 +1,23 @@
+name: LeetCode daily check
+
+on:
+  schedule:
+    # Once a day at 18:17 UTC (6h before the 00:00 UTC daily reset) -> at most one email per day.
+    - cron: "17 18 * * *"
+  workflow_dispatch: # allows a manual "Run workflow" button for testing
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check and notify
+        env:
+          LEETCODE_USERNAME: ${{ secrets.LEETCODE_USERNAME }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: python check_daily.py
