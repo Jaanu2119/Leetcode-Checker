@@ -48,12 +48,42 @@ def solved_today(username, slug, daily_date):
     return any(s["titleSlug"] == slug and int(s["timestamp"]) >= day_start for s in subs)
 
 
-def send_email(subject, text):
+def build_email(title, link):
+    text = (
+        "Hi,\n\n"
+        "I am your well-wisher, the automated assistant of your friend.\n"
+        "I checked and saw that you haven't solved today's LeetCode problem yet.\n"
+        "Try to solve it before you go to bed.\n\n"
+        f"Today's problem: {title}\n{link}\n\n"
+        "Have a good day!\n"
+    )
+    html = f"""\
+<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;
+            border:1px solid #eee;border-radius:12px;color:#333;line-height:1.6">
+  <p style="font-size:18px">Hi 👋,</p>
+  <p>I am your <b>well-wisher</b>, the automated assistant of your friend.</p>
+  <p>I checked and saw that you haven't solved <b>today's LeetCode problem</b> yet.
+     Try to solve it before you go to bed 🌙</p>
+  <div style="background:#fff8e1;border-left:4px solid #ffa116;padding:12px 16px;margin:20px 0">
+    <div style="font-size:13px;color:#888">Today's problem</div>
+    <div style="font-size:16px;font-weight:bold">{title}</div>
+  </div>
+  <p style="text-align:center">
+    <a href="{link}" style="background:#ffa116;color:#fff;text-decoration:none;
+       padding:12px 24px;border-radius:8px;font-weight:bold;display:inline-block">Solve it now</a>
+  </p>
+  <p>Have a good day! 😊</p>
+</div>"""
+    return text, html
+
+
+def send_email(subject, text, html):
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = os.environ["SMTP_USER"]
     msg["To"] = os.environ["TO_EMAIL"]
     msg.set_content(text)
+    msg.add_alternative(html, subtype="html")
     host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
     port = int(os.environ.get("SMTP_PORT", "465"))
     with smtplib.SMTP_SSL(host, port) as s:
@@ -72,11 +102,8 @@ def main():
         print(f"{username} already solved today's daily: {title}. No email sent.")
         return
 
-    send_email(
-        f"LeetCode reminder: daily problem not solved ({daily['date']})",
-        f"Hi,\n\n{username} has not solved today's LeetCode daily problem yet.\n\n"
-        f"Problem: {title}\nLink: {link}\n\nThe daily problem resets at 00:00 UTC.\n",
-    )
+    text, html = build_email(title, link)
+    send_email("A small reminder: today's LeetCode problem 💡", text, html)
     print(f"{username} has not solved {title}. Reminder email sent.")
 
 
