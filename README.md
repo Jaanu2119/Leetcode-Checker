@@ -1,8 +1,8 @@
 # Leetcode-Checker
 
-Checks once a day whether a LeetCode user solved the daily problem. If not, sends one reminder email.
+Checks once a day whether a LeetCode user solved the daily problem, then sends one email: a reminder if not solved, congratulations if solved.
 
-Runs free on GitHub Actions (`.github/workflows/daily-check.yml`, daily at 18:17 UTC). Python standard library only.
+Runs free on GitHub Actions (`.github/workflows/daily-check.yml`, daily at 5:00 PM Asia/Kolkata). Python standard library only.
 
 ## Setup
 1. Gmail: turn on 2-Step Verification, create an App Password at https://myaccount.google.com/apppasswords

@@ -2,8 +2,9 @@ name: LeetCode daily check
 
 on:
   schedule:
-    # Once a day at 18:17 UTC (6h before the 00:00 UTC daily reset) -> at most one email per day.
-    - cron: "17 18 * * *"
+    # Once a day at 5:00 PM India time -> exactly one email per day.
+    - cron: "0 17 * * *"
+      timezone: "Asia/Kolkata"
   workflow_dispatch: # allows a manual "Run workflow" button for testing
 
 jobs:

@@ -1,4 +1,4 @@
-"""Check if a LeetCode user solved today's daily problem; email a reminder if not.
+"""Check if a LeetCode user solved today's daily problem; email a reminder or a congratulations.
 
 Uses only the Python standard library. Config comes from environment variables:
   LEETCODE_USERNAME, SMTP_USER, SMTP_PASSWORD, TO_EMAIL
@@ -48,12 +48,23 @@ def solved_today(username, slug, daily_date):
     return any(s["titleSlug"] == slug and int(s["timestamp"]) >= day_start for s in subs)
 
 
-def build_email(title, link):
+def build_email(solved, title, link):
+    if solved:
+        line = "I checked and saw that you solved today's LeetCode problem. Congratulations, great job!"
+        html_line = ("I checked and saw that you <b>solved today's LeetCode problem</b>. "
+                     "Congratulations, great job! 🎉 Keep the streak going 🔥")
+        color, bg, button = "#2cbb5d", "#e8f8ee", "View problem"
+    else:
+        line = ("I checked and saw that you haven't solved today's LeetCode problem yet. "
+                "Try to solve it before you go to bed.")
+        html_line = ("I checked and saw that you haven't solved <b>today's LeetCode problem</b> yet. "
+                     "Try to solve it before you go to bed 🌙")
+        color, bg, button = "#ffa116", "#fff8e1", "Solve it now"
+
     text = (
         "Hi,\n\n"
         "I am your well-wisher, the automated assistant of your friend.\n"
-        "I checked and saw that you haven't solved today's LeetCode problem yet.\n"
-        "Try to solve it before you go to bed.\n\n"
+        f"{line}\n\n"
         f"Today's problem: {title}\n{link}\n\n"
         "Have a good day!\n"
     )
@@ -62,15 +73,14 @@ def build_email(title, link):
             border:1px solid #eee;border-radius:12px;color:#333;line-height:1.6">
   <p style="font-size:18px">Hi 👋,</p>
   <p>I am your <b>well-wisher</b>, the automated assistant of your friend.</p>
-  <p>I checked and saw that you haven't solved <b>today's LeetCode problem</b> yet.
-     Try to solve it before you go to bed 🌙</p>
-  <div style="background:#fff8e1;border-left:4px solid #ffa116;padding:12px 16px;margin:20px 0">
+  <p>{html_line}</p>
+  <div style="background:{bg};border-left:4px solid {color};padding:12px 16px;margin:20px 0">
     <div style="font-size:13px;color:#888">Today's problem</div>
     <div style="font-size:16px;font-weight:bold">{title}</div>
   </div>
   <p style="text-align:center">
-    <a href="{link}" style="background:#ffa116;color:#fff;text-decoration:none;
-       padding:12px 24px;border-radius:8px;font-weight:bold;display:inline-block">Solve it now</a>
+    <a href="{link}" style="background:{color};color:#fff;text-decoration:none;
+       padding:12px 24px;border-radius:8px;font-weight:bold;display:inline-block">{button}</a>
   </p>
   <p>Have a good day! 😊</p>
 </div>"""
@@ -98,13 +108,12 @@ def main():
     slug = daily["question"]["titleSlug"]
     link = "https://leetcode.com" + daily["link"]
 
-    if solved_today(username, slug, daily["date"]):
-        print(f"{username} already solved today's daily: {title}. No email sent.")
-        return
-
-    text, html = build_email(title, link)
-    send_email("A small reminder: today's LeetCode problem 💡", text, html)
-    print(f"{username} has not solved {title}. Reminder email sent.")
+    solved = solved_today(username, slug, daily["date"])
+    subject = ("Congratulations! You solved today's LeetCode problem 🎉" if solved
+               else "A small reminder: today's LeetCode problem 💡")
+    text, html = build_email(solved, title, link)
+    send_email(subject, text, html)
+    print(f"{username} solved={solved} for {title}. Email sent.")
 
 
 if __name__ == "__main__":
